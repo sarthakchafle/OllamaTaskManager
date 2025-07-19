@@ -1,0 +1,80 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:17
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: agentic_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Sarthak@1234
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d agentic_db" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data # This refers to the named volume 'redis_data' defined at the root
+    command: [ "redis-server", "--appendonly", "yes", "--bind", "0.0.0.0" ]
+    # If you use a password, combine with --requirepass
+    # command: ["redis-server", "--appendonly", "yes", "--bind", "0.0.0.0", "--requirepass", "your_secure_redis_password"]
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    networks:
+      - backend
+
+  ollama:
+    image: ollama/ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-models:/root/.ollama
+    networks:
+      - backend
+
+  app:
+    build: .
+    container_name: agentic-ai-app
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      ollama:
+        # TEMPORARY: Changed condition to service_started to allow app to start
+        # even if Ollama isn't fully "healthy" by its own definition.
+        condition: service_started
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/agentic_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: Sarthak@1234
+#      SPRING_REDIS_HOST: redis
+#      SPRING_REDIS_PORT: 6379
+      OLLAMA_API_URL: http://ollama:11434
+    networks:
+      - backend
+
+# --- CRITICAL CHANGE HERE ---
+# Add 'redis_data:' under the top-level 'volumes:' section
+volumes:
+  ollama-models:
+  redis_data: {} # This line was missing!
+
+networks:
+  backend:
+    driver: bridge
