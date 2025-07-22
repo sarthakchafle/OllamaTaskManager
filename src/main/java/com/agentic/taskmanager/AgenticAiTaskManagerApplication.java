@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
 import org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
@@ -17,6 +18,7 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @SpringBootApplication
 @EnableCaching
+@EnableFeignClients(basePackages = "com.agentic.taskmanager.Feign")
 @EnableAutoConfiguration(exclude = {
 		RedisAutoConfiguration.class,
 		RedisReactiveAutoConfiguration.class

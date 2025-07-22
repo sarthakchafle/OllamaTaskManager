@@ -44,7 +44,15 @@ services:
       - ollama-models:/root/.ollama
     networks:
       - backend
-
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [ gpu ]
+    environment:
+        - NVIDIA_VISIBLE_DEVICES=all
   app:
     build: .
     container_name: agentic-ai-app

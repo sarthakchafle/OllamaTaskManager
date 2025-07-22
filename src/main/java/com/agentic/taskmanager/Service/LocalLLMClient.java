@@ -23,7 +23,7 @@ public class LocalLLMClient {
     @Cacheable(value = "ollamaResponses", key = "#prompt") // Cache results of this method
     public String askLLM(String prompt) {
         Map<String, Object> body = Map.of(
-                "model", "gemma3:latest", // or "llama3", etc.
+                "model", "llama3:latest", // or "llama3", etc.
                 "prompt", prompt,
                 "stream", false
         );
